@@ -12,7 +12,7 @@ I've been consolidating my linear algebra and calculus skills for a month now, s
 Type in terminal:
 
 ```
-go install;$GOBIN/img-classificator
+go build;./img-classificator
 ```
 
 ## Structure
