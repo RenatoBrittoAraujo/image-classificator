@@ -7,6 +7,14 @@ I will be using no libs, only knowledge I can get from the internet for free.
 This is supposed to be an introduction to neural networks so I can complete [this project.](https://github.com/renatobrittoaraujo/rocketlander)
 I've been consolidating my linear algebra and calculus skills for a month now, so I can jump to machine learning without lacking math.
 
+## How to run?
+
+Type in terminal:
+
+```
+go install;$GOBIN/img-classificator
+```
+
 ## Structure
 
 In dataset, you can find two folder containing potatoes and carrots. That is the dataset.
