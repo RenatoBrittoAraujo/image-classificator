@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/renatobrittoaraujo/img-classificator/module"
+	"github.com/renatobrittoaraujo/img-classificator/dataset"
 )
 
 func main() {
-	fmt.Println("image classificator ran :D")
-	module.What()
+	fmt.Println(dataset.GetDataset("batata"))
 }

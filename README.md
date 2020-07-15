@@ -3,9 +3,11 @@
 Go AI image classificator from scratch
 
 The objective is to tell apart potato images from carrot images using go and artifical inteligence.
-I will be using no libs, only knowledge I can get from the internet for free. 
+I will be using no libs, only knowledge I can get in the internet for free. 
 This is supposed to be an introduction to neural networks so I can complete [this project.](https://github.com/renatobrittoaraujo/rocketlander)
-I've been consolidating my linear algebra and calculus skills for a month now, so I can jump to machine learning without lacking math.
+I've been consolidating my linear algebra and calculus skills for a month now, so I can jump to machine learning and ANNs without lacking math.
+
+This could be done with a few lines of python. But at least now I know what those python lines are doing.
 
 ## How to run?
 
