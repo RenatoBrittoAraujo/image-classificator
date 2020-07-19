@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-// GetDataset returns
+// GetDataset returns a slice containing the jpg images of the dataset as bitmaps
 func GetDataset(datasetName string) []image.Image {
 	var dataset []image.Image
 	var fileNames []string
@@ -29,11 +29,6 @@ func GetDataset(datasetName string) []image.Image {
 			fmt.Println("Failure at opening file " + file + ": " + err.Error())
 			panic(err)
 		}
-		// imageData, _, err := image.Decode(imageFile)
-		// if err != nil {
-		// 	fmt.Println("Failure at reading data from " + file + ": " + err.Error())
-		// 	panic(err)
-		// }
 		loadedImage, err := jpeg.Decode(imageFile)
 		if err != nil {
 			fmt.Println("Failure at decoding jpg " + file + ": " + err.Error())
