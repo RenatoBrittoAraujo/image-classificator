@@ -1,19 +1,14 @@
 package ann
 
 type node struct {
-	inEdges  []edge
-	outEdges []edge
-	bias     float64
+	inEdges []edge
+	bias    float64
 }
 
-func createNode(argInEdges []edge, argOutEdges []edge, argActivationFunction int) node {
-	return node{
-		inEdges:            argInEdges,
-		outEdges:           argOutEdges,
-		activationFunction: argActivationFunction,
+func (n *node) getOutput(inputData []float64) float64 {
+	sum := n.bias
+	for i := 0; i < len(inputData); i++ {
+		sum += n.inEdges[i].weight * inputData[i]
 	}
-}
-
-func getOutput(inputData []float64) float64 {
-	return 1.0
+	return sum
 }
