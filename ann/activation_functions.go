@@ -32,7 +32,6 @@ func activationFunction(acivationCode int, data float64) float64 {
 		return actfTanh(data)
 	default:
 		panic("Invalid activation function argument")
-		return 0
 	}
 }
 
@@ -54,7 +53,6 @@ func activationFunctionDerivative(acivationCode int, data float64) float64 {
 		return actdTanh(data)
 	default:
 		panic("Invalid activation function argument")
-		return 0
 	}
 }
 

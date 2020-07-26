@@ -5,6 +5,7 @@ package ann
 */
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/renatobrittoaraujo/img-classificator/helpers"
@@ -40,7 +41,8 @@ func CreateANN(name string, layerSizes []int) Ann {
 			activationFunction: actfcodeSIGMOID,
 			dropoutRate:        0.1,
 		}
-		newLayer.init(layerSizes[i], &ann.layers[i-1])
+		newLayer.init(layerSizes[i], &(ann.layers[i-1]))
+		ann.layers = append(ann.layers, newLayer)
 	}
 	outputLayer := layer{
 		activationFunction: actfcodeSIGMOID,
@@ -60,9 +62,9 @@ func (a *Ann) TrainImages(dataset1 []image.Image, dataset2 []image.Image) {
 	for i := range order {
 		var featureMap []float64
 		if order[i] >= len(dataset1) {
-			// featureMap = a.convertImageToFeatureMap(dataset2[order[i]-len(dataset1)])
+			featureMap = a.convertImage(dataset2[order[i]-len(dataset1)])
 		} else {
-			// featureMap = a.convertImageToFeatureMap(dataset1[order[i]])
+			featureMap = a.convertImage(dataset1[order[i]])
 		}
 		a.trainCase(featureMap)
 	}
@@ -81,6 +83,21 @@ func (a *Ann) trainCase(input []float64) {
 	// Do foward propagation to get output
 	// Calculate loss
 	// Run backpropagation
+}
+
+func (a *Ann) FowardProgation(data []float64) []float64 {
+	if len(data) != len(a.layers[0].nodes) {
+		panic(fmt.Sprint("Invalid input size for furst layer, shoould be", len(a.layers[0].nodes), "but is", len(data)))
+	}
+	data = a.layers[0].flOutput(data)
+	for i := range a.layers {
+		if i == 0 {
+			continue
+		}
+		// fmt.Println("ON LAYER", i, "DATA =", data)
+		data = a.layers[i].output(data)
+	}
+	return data
 }
 
 /* TODO */

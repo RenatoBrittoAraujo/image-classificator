@@ -7,7 +7,7 @@ import (
 	"github.com/renatobrittoaraujo/img-classificator/pooler"
 )
 
-func (a *Ann) Convert(image image.Image) []float64 {
+func (a *Ann) convertImage(image image.Image) []float64 {
 	avgBitmap := make([][]float64, image.Bounds().Dy())
 	for i := range avgBitmap {
 		avgBitmap[i] = make([]float64, image.Bounds().Dx())
@@ -19,9 +19,9 @@ func (a *Ann) Convert(image image.Image) []float64 {
 		}
 	}
 	filterMap := [][]float64{
-		{0, 1, 0},
-		{1, 0, 1},
-		{0, 1, 0},
+		{-1, 1, -1},
+		{1, 1, 1},
+		{-1, 1, -1},
 	}
 	filteredImage := filter.Filter(avgBitmap, filterMap)
 	pooledImage := pooler.MaxPool(filteredImage, 70)

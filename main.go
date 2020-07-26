@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/renatobrittoaraujo/img-classificator/ann"
-	"github.com/renatobrittoaraujo/img-classificator/dataset"
 )
 
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	// args := os.Args[1:]
 	// if args[0] == "train" {
 	// 	dataset1name := args[1]
@@ -21,9 +23,14 @@ func main() {
 	// } else {
 	// 	fmt.Println("What the fuck is this command?")
 	// }
-	for i := 0; i < 10; i++ {
-		image := dataset.GetDataset("batata")[i]
-		a := ann.Ann{}
-		fmt.Println(a.Convert(image))
+	cats := make([]int, 100)
+	for i := 0; i < 1000000; i++ {
+		a := ann.CreateANN("batata", []int{3, 4, 3, 1})
+		v := a.FowardProgation([]float64{1, 2, 3})[0]
+		cat := int(v * 100.0)
+		cats[cat]++
+	}
+	for i := range cats {
+		fmt.Println("{\"category\":\"", i, "\",\"column-1\":", cats[i], "},")
 	}
 }

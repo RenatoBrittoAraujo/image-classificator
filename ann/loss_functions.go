@@ -21,7 +21,6 @@ func lossFunction(lossCode int, outputs []float64, corrects []float64) float64 {
 		return lossfCrossEntropy(outputs, corrects)
 	default:
 		panic("Invalid loss function argument")
-		return 0
 	}
 }
 
@@ -37,7 +36,6 @@ func lossFunctionDerivative(lossCode int, outputs []float64, corrects []float64)
 		return lossdCrossEntropy(outputs, corrects)
 	default:
 		panic("Invalid activation function argument")
-		return 0
 	}
 }
 

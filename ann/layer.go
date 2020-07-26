@@ -30,9 +30,20 @@ func (l *layer) init(numberOfNodes int, lastLayer *layer) {
 	}
 }
 
-// func (l *layer) getTrainingOutput(input []float64) []float64 {
+func (l *layer) output(input []float64) []float64 {
+	data := make([]float64, len(l.nodes))
+	for i := range l.nodes {
+		data[i] = l.nodes[i].output(input, l.activationFunction)
+	}
+	return data
+}
 
-// }
+func (l *layer) flOutput(input []float64) []float64 {
+	for i := range input {
+		input[i] = l.nodes[i].flOutput(input[i], l.activationFunction)
+	}
+	return input
+}
 
 // func (l *layer) getTestingOutput(input []float64) []float64 {
 
