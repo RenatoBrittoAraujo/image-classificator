@@ -24,7 +24,7 @@ func (a *Ann) convertImage(image image.Image) []float64 {
 		{-1, 1, -1},
 	}
 	filteredImage := filter.Filter(avgBitmap, filterMap)
-	pooledImage := pooler.MaxPool(filteredImage, 70)
+	pooledImage := pooler.MaxPool(filteredImage, 30)
 	featureMap := make([]float64, len(pooledImage)*len(pooledImage[0]))
 	i := 0
 	for y := 0; y < len(pooledImage); y++ {
