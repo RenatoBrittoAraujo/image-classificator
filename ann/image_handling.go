@@ -33,5 +33,19 @@ func (a *Ann) convertImage(image image.Image) []float64 {
 			i++
 		}
 	}
+	// DATA SMOOTHING
+	min := +10000000000.0
+	max := -10000000000.0
+	for i := range featureMap {
+		if featureMap[i] < min {
+			min = featureMap[i]
+		}
+		if featureMap[i] > max {
+			max = featureMap[i]
+		}
+	}
+	for i := range featureMap {
+		featureMap[i] = (featureMap[i]-min)*2.0/(max-min) - 1.0
+	}
 	return featureMap
 }
