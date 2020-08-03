@@ -44,6 +44,9 @@ func (a *Ann) convertImage(image image.Image) []float64 {
 			max = featureMap[i]
 		}
 	}
+	if min == max {
+		max = min + 1
+	}
 	for i := range featureMap {
 		featureMap[i] = (featureMap[i]-min)*2.0/(max-min) - 1.0
 	}

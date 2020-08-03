@@ -25,7 +25,7 @@ func main() {
 	// 	fmt.Println("What the fuck is this command?")
 	// }
 	for i := 0; i < 1; i++ {
-		a := ann.CreateANN("batata", []int{10, 10, 10, 1})
+		a := ann.CreateANN("batata", []int{15, 15, 15, 15, 1})
 		// v := a.FowardProgation([]float64{1, 2, 3})[0]
 		dataset1 := dataset.GetDataset("batata")
 		dataset2 := dataset.GetDataset("cenoura")

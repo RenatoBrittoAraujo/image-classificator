@@ -7,7 +7,6 @@ package ann
 import (
 	"fmt"
 	"image"
-	"math"
 
 	"github.com/renatobrittoaraujo/img-classificator/helpers"
 )
@@ -72,10 +71,10 @@ func (a *Ann) TrainImages(dataset1 []image.Image, dataset2 []image.Image) {
 			expected = []float64{1.0}
 		} else {
 			featureMap = a.convertImage(dataset1[order[i]])
-			expected = []float64{0.0}
+			expected = []float64{-1.0}
 		}
 		ok := a.trainCase(featureMap, expected)
-		if expected[0] == 0 {
+		if expected[0] == -1.0 {
 			fmt.Println("Expect batata")
 		} else {
 			fmt.Println("Expect cebola")
@@ -94,22 +93,13 @@ func (a *Ann) TrainImages(dataset1 []image.Image, dataset2 []image.Image) {
 	fmt.Println("OK: ", okcases, " NOTOK: ", notokcases)
 }
 
-// Test runs a test on given dataset and returns an ordered list of names from the data
-// NOTE: names are associated with
-// func (a *Ann) TestImages(dataset []image.Image, label0 string, label1 string) {
-// 	a.teDataset = dataset
-// 	order := helpers.Permutation(len(dataset))
-// }
-
 /* Private functions */
-
 func (a *Ann) trainCase(input []float64, expected []float64) bool {
 	// Do foward propagation to get output
 	res := a.FowardProgation(input)[0]
 	// Run backpropagation
 	a.BackPropagation(expected)
 	fmt.Println("OUTPUT WAS ", fmt.Sprintf("%.2f", a.layerOutputs[len(a.layerOutputs)-1][0]))
-	fmt.Println("LAYERS:")
 	fmt.Println(a.layerOutputs[0])
 	fmt.Println(a.layerOutputs[1])
 	fmt.Println(a.layerOutputs[2])
@@ -117,7 +107,7 @@ func (a *Ann) trainCase(input []float64, expected []float64) bool {
 	if res > 0.5 && expected[0] == 1 {
 		return true
 	}
-	if res <= 0.5 && expected[0] == -1.0 {
+	if res <= 0.5 && expected[0] == 0.0 {
 		return true
 	}
 	return false
@@ -142,53 +132,40 @@ func (a *Ann) FowardProgation(data []float64) []float64 {
 }
 
 func (a *Ann) BackPropagation(expected []float64) {
-	learningRate := 0.01
-	for i := len(a.layers) - 1; i > 0; i-- {
+	learningRate := 0.001
+	for i := len(a.layers) - 1; i >= 0; i-- {
 		output := a.layerOutputs[i]
-		// Update weights
-		for j := 0; j < len(a.layers[i].nodes); j++ {
-			for k := 0; k < len(a.layers[i].nodes[j].inEdges); k++ {
-				fmt.Println("OLD WEIGHT", a.layers[i].nodes[j].inEdges[k].weight)
-				fmt.Println("EXPECTED[J]", expected[j])
-				fmt.Println("activationFunctionDerivative", activationFunctionDerivative(actfcodeSIGMOID, output[j]))
-				a.layers[i].nodes[j].inEdges[k].weight = a.layers[i].nodes[j].inEdges[k].weight +
-					2*(expected[j]-activationFunctionDerivative(actfcodeSIGMOID, output[j]))*learningRate
-				fmt.Println("NEW WEIGHT", a.layers[i].nodes[j].inEdges[k].weight)
-				if math.IsNaN(a.layers[i].nodes[j].inEdges[k].weight) {
-					panic("WHAT THE FUCK")
+		expectedList := make([]float64, 0)
+
+		// Update expected list
+		if i != 0 {
+			expectedList = make([]float64, len(a.layers[i-1].nodes))
+			for j := 0; j < len(a.layers[i].nodes); j++ {
+				for k := 0; k < len(a.layers[i].nodes[j].inEdges); k++ {
+					expectedList[k] = a.layerOutputs[i-1][k] - (-2*(expected[j]-output[j])*
+						activationFunctionDerivative(actfcodeSIGMOID, output[j])*
+						a.layers[i].nodes[j].inEdges[k].weight)*learningRate
 				}
 			}
 		}
-		// Update biases
-		for j := 0; j < len(a.layers[i].nodes); j++ {
-			a.layers[i].nodes[j].bias = a.layers[i].nodes[j].bias +
-				2*(expected[j]-activationFunctionDerivative(actfcodeSIGMOID, output[j]))*learningRate
-		}
-		expectedList := make([]float64, len(a.layers[i-1].nodes))
-		// Update expected list
-		for j := 0; j < len(a.layers[i].nodes); j++ {
+
+		// Update weights
+		for j := 0; j < len(a.layers[i].nodes) && i != 0; j++ {
 			for k := 0; k < len(a.layers[i].nodes[j].inEdges); k++ {
-				expectedList[k] += (+2*expected[j] +
-					-2*activationFunctionDerivative(actfcodeSIGMOID, output[j])) * learningRate
+				a.layers[i].nodes[j].inEdges[k].weight = a.layers[i].nodes[j].inEdges[k].weight -
+					(-2*(expected[j]-output[j])*
+						activationFunctionDerivative(actfcodeSIGMOID, output[j])*
+						a.layerOutputs[i-1][k])*learningRate
 			}
 		}
+
+		// Update biases
+		for j := 0; j < len(a.layers[i].nodes); j++ {
+			a.layers[i].nodes[j].bias = a.layers[i].nodes[j].bias -
+				(-2*(expected[j]-output[j])*
+					activationFunctionDerivative(actfcodeSIGMOID, output[j]))*learningRate
+		}
+
 		expected = expectedList
 	}
 }
-
-/* TODO */
-
-// // LoadANN loads the metadata of an ANN plus it's weights and biases
-// func (a *Ann) LoadANN(path string) bool {
-
-// }
-
-// // SaveANN saves all metadata of an ANN plus it's current weights and biases
-// func (a *Ann) SaveANN(folder string) bool {
-
-// }
-
-// // ListANNs returns a list of ANN files in a folder
-// func (a *Ann) ListANNs(folder string) []string {
-
-// }
