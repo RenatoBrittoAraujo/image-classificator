@@ -32,7 +32,8 @@ func GetDataset(datasetName string) []image.Image {
 		loadedImage, err := jpeg.Decode(imageFile)
 		if err != nil {
 			fmt.Println("Failure at decoding jpg " + file + ": " + err.Error())
-			panic(err)
+			continue
+			// panic(err)
 		}
 		dataset = append(dataset, loadedImage)
 		imageFile.Close()

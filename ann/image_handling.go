@@ -15,16 +15,19 @@ func (a *Ann) convertImage(image image.Image) []float64 {
 	for y := 0; y < image.Bounds().Dy(); y++ {
 		for x := 0; x < image.Bounds().Dx(); x++ {
 			r, g, b, _ := image.At(x, y).RGBA()
-			avgBitmap[y][x] = float64(r+g+b) / 3.0
+			avgBitmap[y][x] = float64(r+g+b) / (3.0 * 65535.0)
+			// fmt.Println(r, g, b, avgBitmap[y][x])
+			// tm, _ := time.ParseDuration("1s")
+			// time.Sleep(tm)
 		}
 	}
 	filterMap := [][]float64{
-		{-1, 1, -1},
-		{1, 1, 1},
-		{-1, 1, -1},
+		{0, 0, 0},
+		{0, 1, 0},
+		{0, 0, 0},
 	}
 	filteredImage := filter.Filter(avgBitmap, filterMap)
-	pooledImage := pooler.MaxPool(filteredImage, 30)
+	pooledImage := pooler.AveragePool(filteredImage, 70)
 	featureMap := make([]float64, len(pooledImage)*len(pooledImage[0]))
 	i := 0
 	for y := 0; y < len(pooledImage); y++ {
@@ -34,21 +37,23 @@ func (a *Ann) convertImage(image image.Image) []float64 {
 		}
 	}
 	// DATA SMOOTHING
-	min := +10000000000.0
-	max := -10000000000.0
-	for i := range featureMap {
-		if featureMap[i] < min {
-			min = featureMap[i]
-		}
-		if featureMap[i] > max {
-			max = featureMap[i]
-		}
-	}
-	if min == max {
-		max = min + 1
-	}
-	for i := range featureMap {
-		featureMap[i] = (featureMap[i]-min)*2.0/(max-min) - 1.0
-	}
+	// min := +10000000000.0
+	// max := -10000000000.0
+	// for i := range featureMap {
+	// 	if featureMap[i] < min {
+	// 		min = featureMap[i]
+	// 	}
+	// 	if featureMap[i] > max {
+	// 		max = featureMap[i]
+	// 	}
+	// }
+	// min = 0
+	// max = 1000
+	// if min == max {
+	// 	max = min + 1
+	// }
+	// for i := range featureMap {
+	// 	featureMap[i] = (featureMap[i]-min)*2.0/(max-min) - 1.0
+	// }
 	return featureMap
 }

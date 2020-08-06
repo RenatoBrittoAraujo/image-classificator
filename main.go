@@ -25,11 +25,12 @@ func main() {
 	// 	fmt.Println("What the fuck is this command?")
 	// }
 	for i := 0; i < 1; i++ {
-		a := ann.CreateANN("batata", []int{15, 15, 15, 15, 1})
+		a := ann.CreateANN("batata", []int{2, 1})
 		// v := a.FowardProgation([]float64{1, 2, 3})[0]
-		dataset1 := dataset.GetDataset("batata")
-		dataset2 := dataset.GetDataset("cenoura")
+		dataset1 := dataset.GetDataset("black")
+		dataset2 := dataset.GetDataset("white")
 		a.TrainImages(dataset2, dataset1)
-		a.TrainImages(dataset1, dataset2)
+		a.TrainImages(dataset2, dataset1)
+		// a.TrainImages(dataset1, dataset2)
 	}
 }

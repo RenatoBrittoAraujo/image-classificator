@@ -23,7 +23,7 @@ func (l *layer) init(numberOfNodes int, lastLayer *layer) {
 			}
 		}
 		newNode := node{
-			bias:    helpers.RandomFloat(-1.0, 1.0),
+			bias:    0, //helpers.RandomFloat(-1.0, 1.0),
 			inEdges: edges,
 		}
 		l.nodes = append(l.nodes, newNode)
