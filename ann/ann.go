@@ -7,9 +7,6 @@ package ann
 import (
 	"fmt"
 	"image"
-	"os"
-	"os/exec"
-	"time"
 
 	"github.com/renatobrittoaraujo/img-classificator/helpers"
 )
@@ -72,12 +69,12 @@ func (a *Ann) TrainImages(dataset1 []image.Image, dataset2 []image.Image) {
 		expected := []float64{0}
 		if order[i] >= 5000 /*len(dataset1)*/ {
 			// featureMap = a.convertImage(dataset2[order[i]-len(dataset1)])
-			featureMap = []float64{0, 1}
-			expected = []float64{0.0}
+			featureMap = []float64{0.1, 1}
+			expected = []float64{1.0}
 		} else {
 			// featureMap = a.convertImage(dataset1[order[i]])
-			featureMap = []float64{1, 0}
-			expected = []float64{1.0}
+			featureMap = []float64{0.3, 0.4}
+			expected = []float64{0.0}
 		}
 		fmt.Println("PUT:", featureMap, "EXPECT:", expected)
 		ok, res := a.trainCase(featureMap, expected)
@@ -107,22 +104,16 @@ func (a *Ann) trainCase(input []float64, expected []float64) (bool, float64) {
 	// Do foward propagation to get output
 	res := a.FowardProgation(input)
 	// Run backpropagation
-	a.BackPropagation([]float64{lossFunction(lossfcodeMSE, res, expected)})
 	fmt.Println("OUTPUT WAS ", fmt.Sprintf("%.2f", a.layerOutputs[len(a.layerOutputs)-1][0]))
-	fmt.Println(a.layerOutputs[0])
-	fmt.Println(a.layerOutputs[1])
-	// fmt.Println(a.layerOutputs[2])
-	onems, _ := time.ParseDuration("1s")
-	time.Sleep(onems)
-	cmd := exec.Command("clear") //Linux example, its tested
-	cmd.Stdout = os.Stdout
-	cmd.Run()
+	// onems, _ := time.ParseDuration("5ms")
+	// time.Sleep(onems)
 	if res[0] > 0.5 && expected[0] == 1 {
 		return true, res[0]
 	}
 	if res[0] <= 0.5 && expected[0] == 0.0 {
 		return true, res[0]
 	}
+	a.BackPropagation([]float64{lossFunction(lossfcodeMSE, res, expected)})
 	return false, res[0]
 }
 
@@ -131,7 +122,7 @@ func (a *Ann) FowardProgation(data []float64) []float64 {
 		data = data[0:len(a.layers[0].nodes)]
 	}
 	if len(data) != len(a.layers[0].nodes) {
-		panic(fmt.Sprint("Invalid input size for first layer, shoould be", len(a.layers[0].nodes), "but is", len(data)))
+		panic(fmt.Sprint("Invalid input size for first layer, should be", len(a.layers[0].nodes), "but is", len(data)))
 	}
 	for i := range a.layers {
 		if i == 0 {
@@ -145,44 +136,49 @@ func (a *Ann) FowardProgation(data []float64) []float64 {
 }
 
 func (a *Ann) BackPropagation(expected []float64) {
-	learningRate := 1.0
-	for i := len(a.layers) - 1; i >= 0; i-- {
+	learningRate := 0.1
+	for i := len(a.layers) - 1; i > 0; i-- {
 		output := a.layerOutputs[i]
-		expectedList := make([]float64, 0)
+		// expectedList := make([]float64, 0)
 
 		// Update weights
-		for j := 0; j < len(a.layers[i].nodes) && i != 0; j++ {
+		for j := 0; j < len(a.layers[i].nodes); j++ {
 			for k := 0; k < len(a.layers[i].nodes[j].inEdges); k++ {
-				fmt.Println("NUDGE TO EDGE ", k, j, "IS", -(-2*(expected[j]-output[j])*
-					activationFunctionDerivative(actfcodeSIGMOID, output[j])*
-					a.layerOutputs[i-1][k])*learningRate)
-				a.layers[i].nodes[j].inEdges[k].weight = a.layers[i].nodes[j].inEdges[k].weight -
-					(-2*(expected[j]-output[j])*
-						activationFunctionDerivative(actfcodeSIGMOID, output[j])*
-						a.layerOutputs[i-1][k])*learningRate
+				derivativeNudge := 2 * (output[j] - expected[j]) *
+					activationFunctionDerivative(actfcodeSIGMOID, output[j]) *
+					a.layerOutputs[i-1][k] * learningRate
+				// if derivativeNudge >= 0 {
+				// 	derivativeNudge *= derivativeNudge
+				// } else {
+				// 	derivativeNudge *= -derivativeNudge
+				// }
+				fmt.Println("NUDGE TO EDGE ", k, j, "IS", -derivativeNudge)
+				a.layers[i].nodes[j].inEdges[k].weight -= derivativeNudge
 				fmt.Println("EDGE IS NOW", a.layers[i].nodes[j].inEdges[k].weight)
 			}
 		}
 
 		// Update biases
-		// for j := 0; j < len(a.layers[i].nodes); j++ {
-		// 	a.layers[i].nodes[j].bias = a.layers[i].nodes[j].bias -
-		// 		(-2*(expected[j]-output[j])*
-		// 			activationFunctionDerivative(actfcodeSIGMOID, output[j]))*learningRate
-		// }
-
-		// Update expected list
-		if i != 0 {
-			expectedList = make([]float64, len(a.layers[i-1].nodes))
-			for j := 0; j < len(a.layers[i].nodes); j++ {
-				for k := 0; k < len(a.layers[i].nodes[j].inEdges); k++ {
-					expectedList[k] = a.layerOutputs[i-1][k] - (-2*(expected[j]-output[j])*
-						activationFunctionDerivative(actfcodeSIGMOID, output[j])*
-						a.layers[i].nodes[j].inEdges[k].weight)*learningRate
-				}
-			}
+		for j := 0; j < len(a.layers[i].nodes); j++ {
+			derivativeNudge := (-2 * (expected[j] - output[j]) *
+				activationFunctionDerivative(actfcodeSIGMOID, output[j]))
+			a.layers[i].nodes[j].bias -= derivativeNudge
+			fmt.Println("NUDGE TO BIAS ", i, "IS", -derivativeNudge)
+			fmt.Println("BIAS IS NOW", a.layers[i].nodes[j].bias)
 		}
 
-		expected = expectedList
+		// Update expected list
+		// if i != 0 {
+		// 	expectedList = make([]float64, len(a.layers[i-1].nodes))
+		// 	for j := 0; j < len(a.layers[i].nodes); j++ {
+		// 		for k := 0; k < len(a.layers[i].nodes[j].inEdges); k++ {
+		// 			expectedList[k] = a.layerOutputs[i-1][k] - (-2*(expected[j]-output[j])*
+		// 				activationFunctionDerivative(actfcodeSIGMOID, output[j])*
+		// 				a.layers[i].nodes[j].inEdges[k].weight)*learningRate
+		// 		}
+		// 	}
+		// }
+
+		// expected = expectedList
 	}
 }

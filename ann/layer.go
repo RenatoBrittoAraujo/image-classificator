@@ -17,7 +17,7 @@ func (l *layer) init(numberOfNodes int, lastLayer *layer) {
 		if lastLayer != nil {
 			for j := 0; j < len(lastLayer.nodes); j++ {
 				newEdge := edge{
-					weight: helpers.RandomFloat(-1.0, 1.0),
+					weight: helpers.RandomFloat(0, 10),
 				}
 				edges = append(edges, newEdge)
 			}
