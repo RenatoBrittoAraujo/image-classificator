@@ -3,7 +3,7 @@ package dataset
 import (
 	"fmt"
 	"image"
-	"image/jpeg"
+	"image/png"
 	"os"
 	"path/filepath"
 )
@@ -29,11 +29,11 @@ func GetDataset(datasetName string) []image.Image {
 			fmt.Println("Failure at opening file " + file + ": " + err.Error())
 			panic(err)
 		}
-		loadedImage, err := jpeg.Decode(imageFile)
+		loadedImage, err := png.Decode(imageFile)
 		if err != nil {
-			fmt.Println("Failure at decoding jpg " + file + ": " + err.Error())
+			fmt.Println("Failure at decoding png " + file + ": " + err.Error())
 			continue
-			// panic(err)
+			panic(err)
 		}
 		dataset = append(dataset, loadedImage)
 		imageFile.Close()
