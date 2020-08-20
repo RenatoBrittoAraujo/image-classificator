@@ -27,8 +27,8 @@ func main() {
 	for i := 0; i < 1; i++ {
 		a := ann.CreateANN("batata", []int{2, 1})
 		// v := a.FowardProgation([]float64{1, 2, 3})[0]
-		dataset1 := dataset.GetDataset("black")
-		dataset2 := dataset.GetDataset("white")
+		dataset1 := dataset.GetDataset("batata")
+		dataset2 := dataset.GetDataset("cenoura")
 		a.TrainImages(dataset2, dataset1)
 		a.TrainImages(dataset2, dataset1)
 		// a.TrainImages(dataset1, dataset2)
