@@ -16,6 +16,7 @@ do
 	if [[ $item == *.png ]]
 	then
 		echo "converting $inputFolder$item... to $sizex$size"
-		convert $inputFolder$item -resize $sizex$size $inputFolder$item
+		echo convert $inputFolder$item -resize $size'x'$size'!' $inputFolder$item
+		convert $inputFolder$item -resize $size'x'$size'!' $inputFolder$item
 	fi
 done
