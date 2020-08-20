@@ -31,8 +31,8 @@ Install image handling lib for adapting our dataset:
 apt install imagemagick
 ```
 
--Go to google and type what you want the dataset to be about. 
--Go to images, scroll down the page until you think it's enough then save the .html file to util folder.
--Run link_parser.py and input the file name and the folder you want the .jpg pictures to download to.
--Run renamer.py to rename the files in increasing order from [1..n].
--Run imageSizeConverter.sh to resize images to a standard format (I use 128x128).
+- Go to google and type what you want the dataset to be about. 
+- Go to images, scroll down the page until you think it's enough then save the .html file to util folder.
+- Run link_parser.py and input the file name and the folder you want the .jpg pictures to download to.
+- Run renamer.py to rename the files in increasing order from [1..n].
+- Run imageSizeConverter.sh to resize images to a standard format (I use 128x128).
