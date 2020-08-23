@@ -10,7 +10,7 @@ func (n *node) output(inputData []float64, actfcode int) float64 {
 	for i := 0; i < len(inputData); i++ {
 		sum += n.inEdges[i].weight * inputData[i]
 	}
-	return activationFunction(actfcode, sum)
+	return sum
 }
 
 func (n *node) flOutput(inputData float64, actfcode int) float64 {

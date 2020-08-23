@@ -30,7 +30,7 @@ func (l *layer) init(numberOfNodes int, lastLayer *layer) {
 	}
 }
 
-func (l *layer) output(input []float64) []float64 {
+func (l *layer) sumOutput(input []float64) []float64 {
 	data := make([]float64, len(l.nodes))
 	for i := range l.nodes {
 		data[i] = l.nodes[i].output(input, l.activationFunction)

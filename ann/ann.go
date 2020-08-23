@@ -20,6 +20,7 @@ type Ann struct {
 	teDataset    []image.Image
 	layers       []layer
 	layerOutputs [][]float64
+	layerSums    [][]float64
 }
 
 // CreateANN creates a new ANN with data
@@ -52,6 +53,7 @@ func CreateANN(name string, layerSizes []int) Ann {
 	outputLayer.init(layerSizes[len(layerSizes)-1], &ann.layers[len(ann.layers)-1])
 	ann.layers = append(ann.layers, outputLayer)
 	ann.layerOutputs = make([][]float64, len(layerSizes))
+	ann.layerSums = make([][]float64, len(layerSizes))
 	return ann
 }
 
@@ -79,23 +81,12 @@ func (a *Ann) TrainImages(dataset1 []image.Image, dataset2 []image.Image) {
 		fmt.Println("PUT:", featureMap, "EXPECT:", expected)
 		ok, res := a.trainCase(featureMap, expected)
 		list = append(list, res)
-		// if expected[0] == 0.0 {
-		// 	fmt.Println("Expect white")
-		// } else {
-		// 	fmt.Println("Expect black")
-		// }
-		// if ok {
-		// 	fmt.Println("Got right")
-		// } else {
-		// 	fmt.Println("Got wrong")
-		// }
 		if ok {
 			okcases++
 		} else {
 			notokcases++
 		}
 	}
-	// fmt.Println(list)
 	fmt.Println("OK: ", okcases, " NOTOK: ", notokcases)
 }
 
@@ -107,13 +98,13 @@ func (a *Ann) trainCase(input []float64, expected []float64) (bool, float64) {
 	fmt.Println("OUTPUT WAS ", fmt.Sprintf("%.2f", a.layerOutputs[len(a.layerOutputs)-1][0]))
 	// onems, _ := time.ParseDuration("5ms")
 	// time.Sleep(onems)
+	a.BackPropagation([]float64{lossFunction(lossfcodeMSE, res, expected)})
 	if res[0] > 0.5 && expected[0] == 1 {
 		return true, res[0]
 	}
 	if res[0] <= 0.5 && expected[0] == 0.0 {
 		return true, res[0]
 	}
-	a.BackPropagation([]float64{lossFunction(lossfcodeMSE, res, expected)})
 	return false, res[0]
 }
 
@@ -128,15 +119,23 @@ func (a *Ann) FowardProgation(data []float64) []float64 {
 		if i == 0 {
 			data = a.layers[0].flOutput(data)
 		} else {
-			data = a.layers[i].output(data)
+			data = a.layers[i].sumOutput(data)
+			fmt.Println("EDGES OF LAYER ", i, ": ", a.layers[i].nodes[0].inEdges)
+			fmt.Println("BIAS OF LAYER ", i, ": ", a.layers[i].nodes[0].bias)
 		}
+		a.layerSums[i] = data
+		fmt.Println("SUMMED LAYER ", i, ": ", data)
+		for i := range data {
+			data[i] = activationFunction(actfcodeSIGMOID, data[i])
+		}
+		fmt.Println("OUTPUT OF LAYER ", i, ": ", data)
 		a.layerOutputs[i] = data
 	}
 	return data
 }
 
 func (a *Ann) BackPropagation(expected []float64) {
-	learningRate := 0.1
+	learningRate := 1.0
 	for i := len(a.layers) - 1; i > 0; i-- {
 		output := a.layerOutputs[i]
 		// expectedList := make([]float64, 0)
@@ -144,8 +143,11 @@ func (a *Ann) BackPropagation(expected []float64) {
 		// Update weights
 		for j := 0; j < len(a.layers[i].nodes); j++ {
 			for k := 0; k < len(a.layers[i].nodes[j].inEdges); k++ {
-				derivativeNudge := 2 * (output[j] - expected[j]) *
-					activationFunctionDerivative(actfcodeSIGMOID, output[j]) *
+				fmt.Println("a1:", a.layerOutputs[i-1][k])
+				fmt.Println("s1:", a.layerSums[i-1][k])
+				fmt.Println("output:", output[j])
+				derivativeNudge := -2 * (expected[j] - output[j]) *
+					activationFunctionDerivative(actfcodeSIGMOID, a.layerSums[i][j]) *
 					a.layerOutputs[i-1][k] * learningRate
 				// if derivativeNudge >= 0 {
 				// 	derivativeNudge *= derivativeNudge
@@ -161,7 +163,7 @@ func (a *Ann) BackPropagation(expected []float64) {
 		// Update biases
 		for j := 0; j < len(a.layers[i].nodes); j++ {
 			derivativeNudge := (-2 * (expected[j] - output[j]) *
-				activationFunctionDerivative(actfcodeSIGMOID, output[j]))
+				activationFunctionDerivative(actfcodeSIGMOID, a.layerSums[i][j]))
 			a.layers[i].nodes[j].bias -= derivativeNudge
 			fmt.Println("NUDGE TO BIAS ", i, "IS", -derivativeNudge)
 			fmt.Println("BIAS IS NOW", a.layers[i].nodes[j].bias)
