@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -11,26 +12,24 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	// args := os.Args[1:]
-	// if args[0] == "train" {
-	// 	dataset1name := args[1]
-	// 	dataset2name := args[2]
-	// 	fmt.Println("Training with [", dataset1name, dataset2name, "] datasets...")
-	// 	// dataset1 := dataset.GetDataset(dataset1name)
-	// 	// dataset2 := dataset.GetDataset(dataset2name)
-	// 	for {
-	// 		fmt.Println("AHAH")
-	// 	}
-	// } else {
-	// 	fmt.Println("What the fuck is this command?")
-	// }
+	conversions := make([]dataset.ImageConversion, 2)
+	conversions[0] = dataset.CreateFilter(
+		[][]float64{
+			[]float64{1, 2, 1},
+			[]float64{2, 2, 2},
+			[]float64{1, 2, 1},
+		},
+	)
+	conversions[1] = dataset.CreatePooler(20)
+	dataset1 := dataset.GetFeatureMaps("black", conversions)
+	dataset2 := dataset.GetFeatureMaps("white", conversions)
+	fmt.Println("DATASET1 SIZE: ", len(dataset1))
+	fmt.Println("DATASET1 IMAGE SIZE:", len(dataset1[0]))
 	for i := 0; i < 1; i++ {
-		a := ann.CreateANN("batata", []int{2, 3, 1})
-		// v := a.FowardProgation([]float64{1, 2, 3})[0]
-		dataset1 := dataset.GetDataset("batata")
-		dataset2 := dataset.GetDataset("cenoura")
-		for i := 0; i < 100; i++ {
-			a.TrainImages(dataset2, dataset1)
+		fmt.Println("CREATE ANN batata")
+		a := ann.CreateANN("batata", []int{len(dataset1[0]), 10, 10, 1})
+		for i := 0; i < 1000; i++ {
+			a.Train(dataset2, dataset1)
 		}
 	}
 }

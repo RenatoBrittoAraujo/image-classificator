@@ -39,3 +39,12 @@ func GetDataset(datasetName string) []image.Image {
 	}
 	return dataset
 }
+
+func GetFeatureMaps(datasetName string, conversions []ImageConversion) [][]float64 {
+	dataset := GetDataset(datasetName)
+	featureMaps := make([][]float64, len(dataset))
+	for i := range dataset {
+		featureMaps[i] = FeatureMap(dataset[i], conversions)
+	}
+	return featureMaps
+}

@@ -1,4 +1,4 @@
-package ann
+package dataset
 
 import (
 	"image"
@@ -13,28 +13,28 @@ const (
 )
 
 // Creates a two dimensional filter for image conversion
-func CreateFilter(filter [][]float64) imageConversion {
-	return imageConversion{
+func CreateFilter(filter [][]float64) ImageConversion {
+	return ImageConversion{
 		conversionType: imageFilter,
 		filter:         filter,
 	}
 }
 
 // Creates a pooler for image conversion
-func CreatePooler(poolSize int) imageConversion {
-	return imageConversion{
+func CreatePooler(poolSize int) ImageConversion {
+	return ImageConversion{
 		conversionType: imagePool,
 		poolSize:       poolSize,
 	}
 }
 
-type imageConversion struct {
+type ImageConversion struct {
 	conversionType int
 	filter         [][]float64
 	poolSize       int
 }
 
-func (a *Ann) convertImage(image image.Image, conversions []imageConversion) []float64 {
+func FeatureMap(image image.Image, conversions []ImageConversion) []float64 {
 	redBitmap := make([][]float64, image.Bounds().Dy())
 	greenBitmap := make([][]float64, image.Bounds().Dy())
 	blueBitmap := make([][]float64, image.Bounds().Dy())

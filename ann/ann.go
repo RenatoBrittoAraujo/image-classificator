@@ -6,7 +6,6 @@ package ann
 
 import (
 	"fmt"
-	"image"
 
 	"github.com/renatobrittoaraujo/img-classificator/helpers"
 )
@@ -15,9 +14,6 @@ import (
 type Ann struct {
 	name         string
 	path         string
-	trDataset1   []image.Image
-	trDataset2   []image.Image
-	teDataset    []image.Image
 	layers       []layer
 	layerOutputs [][]float64
 	layerSums    [][]float64
@@ -57,35 +53,43 @@ func CreateANN(name string, layerSizes []int) Ann {
 	return ann
 }
 
-// TrainImages trains the ann with given images
+// Train trains the ann with given inputs
 // NOTE: the order of the datasets matter
-func (a *Ann) TrainImages(dataset1 []image.Image, dataset2 []image.Image) {
-	a.trDataset1 = dataset1
-	a.trDataset2 = dataset2
-	order := helpers.Permutation(10000)
+func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
+	order := helpers.Permutation(len(dataset1) + len(dataset2))
 	okcases := 0
 	notokcases := 0
+	dataset1misses := 0
+	dataset2misses := 0
 	for i := range order {
 		var featureMap []float64
 		expected := []float64{0}
-		if order[i]&1 == 0 {
-			// featureMap = a.convertImage(dataset2[order[i]-len(dataset1)])
-			featureMap = []float64{0.1, 1}
+		datasetIndex := 0
+		if order[i] >= len(dataset1) {
+			datasetIndex = 1
+		}
+		if datasetIndex == 1 {
+			featureMap = dataset2[order[i]-len(dataset1)]
 			expected = []float64{1.0}
 		} else {
-			// featureMap = a.convertImage(dataset1[order[i]])
-			featureMap = []float64{0.3, 0.4}
+			featureMap = dataset1[order[i]]
 			expected = []float64{0.0}
 		}
-		// fmt.Println("PUT:", featureMap, "EXPECT:", expected)
 		ok := a.trainCase(featureMap, expected)
 		if ok {
 			okcases++
 		} else {
 			notokcases++
+			if datasetIndex == 0 {
+				dataset1misses++
+			} else {
+				dataset2misses++
+			}
 		}
 	}
+	fmt.Println("DATASET1 MISSES:", dataset1misses, "DATASET2 MISSES:", dataset2misses)
 	fmt.Println("OK: ", okcases, " NOTOK: ", notokcases)
+	fmt.Println("PRECISION: ", float64(okcases)/float64(okcases+notokcases))
 }
 
 /* Private functions */
@@ -124,7 +128,7 @@ func (a *Ann) FowardProgation(data []float64) []float64 {
 }
 
 func (a *Ann) BackPropagation(expected []float64) {
-	learningRate := helpers.RandomFloat(0.1, 0.4)
+	learningRate := 0.1
 	for i := len(a.layers) - 1; i > 0; i-- {
 		output := a.layerOutputs[i]
 
