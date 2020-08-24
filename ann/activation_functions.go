@@ -81,7 +81,7 @@ func actfRelu(val float64) float64 {
 }
 
 func actfSigmoid(val float64) float64 {
-	return 1.0 / (1 + math.Exp(-val))
+	return 1.0 / (1.0 + math.Exp(-val))
 }
 
 func actfSoftplus(val float64) float64 {
@@ -117,7 +117,7 @@ func actdRelu(val float64) float64 {
 }
 
 func actdSigmoid(val float64) float64 {
-	return actfSigmoid(val) * (1 - actfSigmoid(val))
+	return actfSigmoid(val) * (1.0 - actfSigmoid(val))
 }
 
 func actdSoftplus(val float64) float64 {
