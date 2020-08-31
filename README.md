@@ -9,6 +9,8 @@ I've been consolidating my linear algebra and calculus skills for a month now, s
 
 This could be done with a few lines of python. But at least now I know what those python lines are doing.
 
+Milestone 1 (30/08/2020): ~68% precision.
+
 ## How to run?
 
 Type in terminal:
