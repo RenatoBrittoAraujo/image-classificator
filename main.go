@@ -21,13 +21,13 @@ func main() {
 		},
 	)
 	conversions[1] = dataset.CreatePooler(20)
-	dataset1 := dataset.GetFeatureMaps("black", conversions)
-	dataset2 := dataset.GetFeatureMaps("white", conversions)
+	dataset1 := dataset.GetFeatureMaps("batata", conversions)
+	dataset2 := dataset.GetFeatureMaps("cenoura", conversions)
 	fmt.Println("DATASET1 SIZE: ", len(dataset1))
 	fmt.Println("DATASET1 IMAGE SIZE:", len(dataset1[0]))
 	for i := 0; i < 1; i++ {
 		fmt.Println("CREATE ANN batata")
-		a := ann.CreateANN("batata", []int{len(dataset1[0]), 10, 10, 1})
+		a := ann.CreateANN("batata", []int{len(dataset1[0]), 20, 10, 10, 1})
 		for i := 0; i < 1000; i++ {
 			a.Train(dataset2, dataset1)
 		}

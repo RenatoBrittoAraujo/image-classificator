@@ -2,6 +2,7 @@ package dataset
 
 import (
 	"image"
+	"math"
 
 	"github.com/renatobrittoaraujo/img-classificator/filter"
 	"github.com/renatobrittoaraujo/img-classificator/pooler"
@@ -35,46 +36,66 @@ type ImageConversion struct {
 }
 
 func FeatureMap(image image.Image, conversions []ImageConversion) []float64 {
-	redBitmap := make([][]float64, image.Bounds().Dy())
-	greenBitmap := make([][]float64, image.Bounds().Dy())
-	blueBitmap := make([][]float64, image.Bounds().Dy())
-	for i := range redBitmap {
-		redBitmap[i] = make([]float64, image.Bounds().Dx())
-		greenBitmap[i] = make([]float64, image.Bounds().Dx())
-		blueBitmap[i] = make([]float64, image.Bounds().Dx())
-	}
-	for y := 0; y < image.Bounds().Dy(); y++ {
-		for x := 0; x < image.Bounds().Dx(); x++ {
-			r, g, b, _ := image.At(x, y).RGBA()
-			redBitmap[y][x] = float64(r)
-			greenBitmap[y][x] = float64(g)
-			blueBitmap[y][x] = float64(b)
-		}
-	}
+	red, green, blue := imageToColorBitmaps(image)
 	for _, conversion := range conversions {
 		switch conversion.conversionType {
 		case imagePool:
-			redBitmap = pooler.AveragePool(redBitmap, conversion.poolSize)
-			greenBitmap = pooler.AveragePool(greenBitmap, conversion.poolSize)
-			blueBitmap = pooler.AveragePool(blueBitmap, conversion.poolSize)
+			red = pooler.AveragePool(red, conversion.poolSize)
+			green = pooler.AveragePool(green, conversion.poolSize)
+			blue = pooler.AveragePool(blue, conversion.poolSize)
 		case imageFilter:
-			redBitmap = filter.Filter(redBitmap, conversion.filter)
-			greenBitmap = filter.Filter(greenBitmap, conversion.filter)
-			blueBitmap = filter.Filter(blueBitmap, conversion.filter)
+			red = filter.Filter(red, conversion.filter)
+			green = filter.Filter(green, conversion.filter)
+			blue = filter.Filter(blue, conversion.filter)
 		default:
 			panic("Unknown conversion type")
 		}
 	}
-	imageLength := len(redBitmap) * len(redBitmap[0])
+	imageLength := len(red) * len(red[0])
 	featureMap := make([]float64, imageLength*3)
 	i := 0
-	for y := 0; y < len(redBitmap); y++ {
-		for x := 0; x < len(redBitmap[0]); x++ {
-			featureMap[i] = redBitmap[y][x]
-			featureMap[i+imageLength] = greenBitmap[y][x]
-			featureMap[i+imageLength*2] = blueBitmap[y][x]
+	for y := 0; y < len(red); y++ {
+		for x := 0; x < len(red[0]); x++ {
+			featureMap[i] = red[y][x]
+			featureMap[i+imageLength] = green[y][x]
+			featureMap[i+imageLength*2] = blue[y][x]
 			i++
 		}
 	}
-	return featureMap
+	return normalize(featureMap)
+}
+
+func imageToColorBitmaps(image image.Image) (red [][]float64, green [][]float64, blue [][]float64) {
+	red = make([][]float64, image.Bounds().Dy())
+	green = make([][]float64, image.Bounds().Dy())
+	blue = make([][]float64, image.Bounds().Dy())
+	for i := range red {
+		red[i] = make([]float64, image.Bounds().Dx())
+		green[i] = make([]float64, image.Bounds().Dx())
+		blue[i] = make([]float64, image.Bounds().Dx())
+	}
+	for y := 0; y < image.Bounds().Dy(); y++ {
+		for x := 0; x < image.Bounds().Dx(); x++ {
+			r, g, b, _ := image.At(x, y).RGBA()
+			red[y][x] = float64(r)
+			green[y][x] = float64(g)
+			blue[y][x] = float64(b)
+		}
+	}
+	return red, green, blue
+}
+
+func normalize(input []float64) []float64 {
+	normal := 0.0
+	for _, v := range input {
+		normal += v * v
+	}
+	if normal == 0.0 {
+		return input
+	}
+	normal = math.Sqrt(normal)
+	for i := range input {
+		input[i] = input[i] / normal
+	}
+	return input
 }

@@ -1,5 +1,9 @@
 package ann
 
+import (
+	"github.com/renatobrittoaraujo/img-classificator/helpers"
+)
+
 type layer struct {
 	nodes              []node
 	activationFunction int
@@ -13,13 +17,13 @@ func (l *layer) init(numberOfNodes int, lastLayer *layer) {
 		if lastLayer != nil {
 			for j := 0; j < len(lastLayer.nodes); j++ {
 				newEdge := edge{
-					weight: 0, //helpers.RandomFloat(-1.0, 1.0),
+					weight: helpers.RandomFloat(0.0, 1.0),
 				}
 				edges = append(edges, newEdge)
 			}
 		}
 		newNode := node{
-			bias:    0, //helpers.RandomFloat(-1.0, 1.0),
+			bias:    helpers.RandomFloat(0.0, 1.0),
 			inEdges: edges,
 		}
 		l.nodes = append(l.nodes, newNode)

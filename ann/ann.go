@@ -74,6 +74,7 @@ func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
 		} else {
 			featureMap = dataset1[order[i]]
 			expected = []float64{0.0}
+
 		}
 		ok := a.trainCase(featureMap, expected)
 		if ok {
@@ -87,7 +88,7 @@ func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
 			}
 		}
 	}
-	fmt.Println("DATASET1 MISSES:", dataset1misses, "DATASET2 MISSES:", dataset2misses)
+	fmt.Println("DATASET 1 MISSES:", dataset1misses, "DATASET 2 MISSES:", dataset2misses)
 	fmt.Println("OK: ", okcases, " NOTOK: ", notokcases)
 	fmt.Println("PRECISION: ", float64(okcases)/float64(okcases+notokcases))
 }
@@ -95,6 +96,7 @@ func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
 /* Private functions */
 func (a *Ann) trainCase(input []float64, expected []float64) bool {
 	res := a.FowardProgation(input)
+	// fmt.Println("OUTPUT:", res[0])
 	a.BackPropagation(expected)
 	if res[0] > 0.5 && expected[0] == 1 {
 		return true
@@ -123,12 +125,13 @@ func (a *Ann) FowardProgation(data []float64) []float64 {
 			data[i] = activationFunction(actfcodeSIGMOID, data[i])
 		}
 		a.layerOutputs[i] = data
+
 	}
 	return data
 }
 
 func (a *Ann) BackPropagation(expected []float64) {
-	learningRate := 0.1
+	learningRate := 0.01
 	for i := len(a.layers) - 1; i > 0; i-- {
 		output := a.layerOutputs[i]
 
