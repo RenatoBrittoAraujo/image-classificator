@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("DATASET1 IMAGE SIZE:", len(dataset1[0]))
 	for i := 0; i < 1; i++ {
 		fmt.Println("CREATE ANN batata")
-		a := ann.CreateANN("batata", []int{len(dataset1[0]), 40, 80, 10, 10, 1})
+		a := ann.CreateANN("batata", []int{len(dataset1[0]), 40, 30, 10, 10, 1})
 		for i := 0; i < 1000; i++ {
 			a.Train(dataset1, dataset2)
 		}

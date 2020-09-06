@@ -29,21 +29,21 @@ func CreateANN(name string, layerSizes []int) Ann {
 		path: "savedneuralnetworks/" + name,
 	}
 	inputLayer := layer{
-		activationFunction: actfcodeSIGMOID,
+		activationFunction: actfcodeTANH,
 		dropoutRate:        0.1,
 	}
 	inputLayer.init(layerSizes[0], nil)
 	ann.layers = append(ann.layers, inputLayer)
 	for i := 1; i < len(layerSizes)-1; i++ {
 		newLayer := layer{
-			activationFunction: actfcodeSIGMOID,
+			activationFunction: actfcodeTANH,
 			dropoutRate:        0.1,
 		}
 		newLayer.init(layerSizes[i], &(ann.layers[i-1]))
 		ann.layers = append(ann.layers, newLayer)
 	}
 	outputLayer := layer{
-		activationFunction: actfcodeSIGMOID,
+		activationFunction: actfcodeTANH,
 		dropoutRate:        0.1,
 	}
 	outputLayer.init(layerSizes[len(layerSizes)-1], &ann.layers[len(ann.layers)-1])
@@ -73,7 +73,7 @@ func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
 			expected = []float64{1.0}
 		} else {
 			featureMap = dataset1[order[i]]
-			expected = []float64{0.0}
+			expected = []float64{-1.0}
 
 		}
 		ok := a.trainCase(featureMap, expected)
@@ -81,7 +81,7 @@ func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
 			okcases++
 		} else {
 			notokcases++
-			if datasetIndex == 0 {
+			if datasetIndex == -1.0 {
 				dataset1misses++
 			} else {
 				dataset2misses++
@@ -98,10 +98,10 @@ func (a *Ann) trainCase(input []float64, expected []float64) bool {
 	res := a.FowardProgation(input)
 	// fmt.Println("OUTPUT:", res[0])
 	a.BackPropagation(expected)
-	if res[0] > 0.5 && expected[0] == 1 {
+	if res[0] > 0.0 && expected[0] == 1 {
 		return true
 	}
-	if res[0] <= 0.5 && expected[0] == 0.0 {
+	if res[0] <= 0.0 && expected[0] == -1.0 {
 		return true
 	}
 	return false
@@ -122,7 +122,7 @@ func (a *Ann) FowardProgation(data []float64) []float64 {
 		}
 		a.layerSums[i] = append([]float64(nil), data...)
 		for i := range data {
-			data[i] = activationFunction(actfcodeSIGMOID, data[i])
+			data[i] = activationFunction(actfcodeTANH, data[i])
 		}
 		a.layerOutputs[i] = data
 
@@ -143,7 +143,7 @@ func (a *Ann) BackPropagation(expected []float64) {
 				o := output[j]
 				derivativeNudge :=
 					-2 * (expected[j] - o) *
-						activationFunctionDerivative(actfcodeSIGMOID, s) *
+						activationFunctionDerivative(actfcodeTANH, s) *
 						v * learningRate
 				a.layers[i].nodes[j].inEdges[k].weight -= derivativeNudge
 			}
@@ -154,7 +154,8 @@ func (a *Ann) BackPropagation(expected []float64) {
 			s := a.layerSums[i][j]
 			o := output[j]
 			derivativeNudge := (-2 * (expected[j] - o) *
-				activationFunctionDerivative(actfcodeSIGMOID, s))
+				activationFunctionDerivative(actfcodeTANH, s)) *
+				learningRate
 			a.layers[i].nodes[j].bias -= derivativeNudge
 		}
 
@@ -167,7 +168,7 @@ func (a *Ann) BackPropagation(expected []float64) {
 				o := output[j]
 				derivativeNudge :=
 					-2 * (expected[j] - o) *
-						activationFunctionDerivative(actfcodeSIGMOID, s) *
+						activationFunctionDerivative(actfcodeTANH, s) *
 						w * learningRate
 				expectedList[k] = a.layerOutputs[i-1][k] - derivativeNudge
 			}
