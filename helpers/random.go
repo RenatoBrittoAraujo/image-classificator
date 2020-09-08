@@ -11,7 +11,7 @@ func RandomFloat(min float64, max float64) float64 {
 
 // Permutation retuns a permutation of integer of given input
 func Permutation(size int) []int {
-	output := make([]int, size, size)
+	output := make([]int, size)
 	for i := 0; i < size; i++ {
 		output[i] = i
 	}

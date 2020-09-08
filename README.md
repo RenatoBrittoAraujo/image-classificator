@@ -38,3 +38,10 @@ apt install imagemagick
 - Run `pyhton3 utils/link_parser.py` and input the file name and the folder you want the .jpg pictures to download to.
 - Run `python3 utils/renamer.py` to rename the files in increasing order from [1..n].
 - Run `./utils/imageSizeConverter.sh` to resize images to a standard format (I use 128x128).
+
+### Future possible improvements:
+
+- [ ] Multiple category output
+- [ ] Matrix operations from layer to layer
+- [ ] Support for multiple groups
+ 

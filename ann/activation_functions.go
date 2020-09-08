@@ -125,5 +125,5 @@ func actdSoftplus(val float64) float64 {
 }
 
 func actdTanh(val float64) float64 {
-	return 1 - actfTanh(val)*actfTanh(val)
+	return (1 - math.Tanh(val)*math.Tanh(val))
 }

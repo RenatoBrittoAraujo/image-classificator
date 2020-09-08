@@ -61,6 +61,8 @@ func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
 	notokcases := 0
 	dataset1misses := 0
 	dataset2misses := 0
+	sum1 := 0.0
+	sum2 := 0.0
 	for i := range order {
 		var featureMap []float64
 		expected := []float64{0}
@@ -70,13 +72,18 @@ func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
 		}
 		if datasetIndex == 1 {
 			featureMap = dataset2[order[i]-len(dataset1)]
-			expected = []float64{1.0}
+			expected = []float64{-1.0}
 		} else {
 			featureMap = dataset1[order[i]]
-			expected = []float64{-1.0}
-
+			expected = []float64{1.0}
 		}
-		ok := a.trainCase(featureMap, expected)
+		ok, res := a.trainCase(featureMap, expected)
+		// fmt.Println("INPUT: ", datasetIndex, "\tEXPECTED: ", expected[0], "\tRES: ", res[0])
+		if datasetIndex == 0 {
+			sum1 += res[0]
+		} else {
+			sum2 += res[0]
+		}
 		if ok {
 			okcases++
 		} else {
@@ -89,22 +96,25 @@ func (a *Ann) Train(dataset1 [][]float64, dataset2 [][]float64) {
 		}
 	}
 	fmt.Println("DATASET 1 MISSES:", dataset1misses, "DATASET 2 MISSES:", dataset2misses)
+	fmt.Println("AVG OUTPUT 1: ", sum1/float64(len(dataset1)), "AVG OUTPUT 2: ", sum2/float64(len(dataset2)))
 	fmt.Println("OK: ", okcases, " NOTOK: ", notokcases)
 	fmt.Println("PRECISION: ", float64(okcases)/float64(okcases+notokcases))
 }
 
 /* Private functions */
-func (a *Ann) trainCase(input []float64, expected []float64) bool {
-	res := a.FowardProgation(input)
-	// fmt.Println("OUTPUT:", res[0])
+func (a *Ann) trainCase(input []float64, expected []float64) (flg bool, res []float64) {
+	res = a.FowardProgation(input)
 	a.BackPropagation(expected)
 	if res[0] > 0.0 && expected[0] == 1 {
-		return true
+		flg = true
+		return
 	}
 	if res[0] <= 0.0 && expected[0] == -1.0 {
-		return true
+		flg = true
+		return
 	}
-	return false
+	flg = false
+	return
 }
 
 func (a *Ann) FowardProgation(data []float64) []float64 {
@@ -121,11 +131,12 @@ func (a *Ann) FowardProgation(data []float64) []float64 {
 			data = a.layers[i].sumOutput(data)
 		}
 		a.layerSums[i] = append([]float64(nil), data...)
+		// fmt.Println("BEFORE ACTIVATION: ", data)
 		for i := range data {
 			data[i] = activationFunction(actfcodeTANH, data[i])
 		}
 		a.layerOutputs[i] = data
-
+		// fmt.Println("AFTER  ACTIVATION: ", data)
 	}
 	return data
 }
@@ -137,14 +148,21 @@ func (a *Ann) BackPropagation(expected []float64) {
 
 		// Update weights
 		for j := 0; j < len(a.layers[i].nodes); j++ {
+			// fmt.Println(a.layers[i].nodes[j].inEdges)
 			for k := 0; k < len(a.layers[i].nodes[j].inEdges); k++ {
 				v := a.layerOutputs[i-1][k]
 				s := a.layerSums[i][j]
 				o := output[j]
+				// if (expected[j] - o) > 0.01 {
+				// 	fmt.Println(expected[j], o)
+				// 	fmt.Println("(expected[j] - o): ", (expected[j] - o))
+				// }
+				// fmt.Println("(expected[j] - o): ", (expected[j] - o), "activationFunctionDerivative(actfcodeTANH, s):", activationFunctionDerivative(actfcodeTANH, s), "v:", v)
 				derivativeNudge :=
-					-2 * (expected[j] - o) *
+					-2.0 * (expected[j] - o) *
 						activationFunctionDerivative(actfcodeTANH, s) *
 						v * learningRate
+				// fmt.Println("DERIVATIVE NUDGE: ", derivativeNudge, "NEW WEIGHT: ", a.layers[i].nodes[j].inEdges[k].weight-derivativeNudge)
 				a.layers[i].nodes[j].inEdges[k].weight -= derivativeNudge
 			}
 		}
@@ -175,4 +193,40 @@ func (a *Ann) BackPropagation(expected []float64) {
 		}
 		expected = expectedList
 	}
+}
+
+func (a *Ann) Test(dataset1 [][]float64, dataset2 [][]float64) {
+	acc1 := 0
+	acc2 := 0
+	err1 := 0
+	err2 := 0
+	for i := 0; i < len(dataset1)+len(dataset2); i++ {
+		testCase := []float64{}
+		expected := []float64{}
+		// inputDataset := 0
+		if i < len(dataset1) {
+			testCase = dataset1[i]
+			expected = []float64{-1.0}
+		} else {
+			// inputDataset = 1
+			testCase = dataset2[i-len(dataset1)]
+			expected = []float64{1.0}
+		}
+		res := a.FowardProgation(testCase)
+		// fmt.Println("TEST INPUT: ", inputDataset, "RESULT: ", res[0])
+
+		if res[0] >= 0 && expected[0] == 1.0 {
+			acc1++
+		} else if res[0] < 0 && expected[0] == -1.0 {
+			acc2++
+		} else if res[0] >= 0 && expected[0] == -1.0 {
+			err2++
+		} else {
+			err1++
+		}
+	}
+	fmt.Println("CONFUSION MATRIX:")
+	fmt.Println("\tGroup 1\tGroup 2")
+	fmt.Println("ACC\t", acc1, "\t", acc2)
+	fmt.Println("ERR\t", err1, "\t", err2)
 }

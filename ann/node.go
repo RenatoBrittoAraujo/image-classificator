@@ -14,6 +14,6 @@ func (n *node) output(inputData []float64, actfcode int) float64 {
 }
 
 func (n *node) flOutput(inputData float64, actfcode int) float64 {
-	sum := n.bias + inputData
+	sum := inputData
 	return sum
 }

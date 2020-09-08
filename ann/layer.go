@@ -1,6 +1,8 @@
 package ann
 
 import (
+	"math"
+
 	"github.com/renatobrittoaraujo/img-classificator/helpers"
 )
 
@@ -17,7 +19,7 @@ func (l *layer) init(numberOfNodes int, lastLayer *layer) {
 		if lastLayer != nil {
 			for j := 0; j < len(lastLayer.nodes); j++ {
 				newEdge := edge{
-					weight: helpers.RandomFloat(0.0, 1.0) * 0.01,
+					weight: helpers.RandomFloat(-1.0, 1.0) * 0.1,
 				}
 				edges = append(edges, newEdge)
 			}
@@ -32,7 +34,10 @@ func (l *layer) init(numberOfNodes int, lastLayer *layer) {
 
 func (l *layer) sumOutput(input []float64) []float64 {
 	data := make([]float64, len(l.nodes))
-	for i := range l.nodes {
+	usedNodesCount := int(math.Ceil(1.0-l.dropoutRate) * float64(len(l.nodes)))
+	notDropoutNodes := helpers.Permutation(len(l.nodes))[0:usedNodesCount]
+	// fmt.Println(notDropoutNodes)
+	for i := range notDropoutNodes {
 		data[i] = l.nodes[i].output(input, l.activationFunction)
 	}
 	return data
@@ -44,7 +49,3 @@ func (l *layer) flOutput(input []float64) []float64 {
 	}
 	return input
 }
-
-// func (l *layer) getTestingOutput(input []float64) []float64 {
-
-// }
