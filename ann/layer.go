@@ -36,7 +36,6 @@ func (l *layer) sumOutput(input []float64) []float64 {
 	data := make([]float64, len(l.nodes))
 	usedNodesCount := int(math.Ceil(1.0-l.dropoutRate) * float64(len(l.nodes)))
 	notDropoutNodes := helpers.Permutation(len(l.nodes))[0:usedNodesCount]
-	// fmt.Println(notDropoutNodes)
 	for i := range notDropoutNodes {
 		data[i] = l.nodes[i].output(input, l.activationFunction)
 	}

@@ -5,10 +5,9 @@ do
     buildok=$?
     if [ $buildok == 0 ]
     then
-        echo "BUILDOK = $buildok"
         ./img-classificator
     else
-        echo "ERROR COMPILING! ==============================="
+        echo "ERROR COMPILING!"
     fi
     sleep 3
 done
